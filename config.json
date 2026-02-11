@@ -1,11 +1,14 @@
 {
-  
-  "supportRoleId": "1447743349749715005",
-  "ticketCategoryId": "",
-  "allowedRoleIds": [
+  "ticketCategoryIds": [
+    "1452774937302401216",
+    "1452774982324195481",
+    "1452775064188620992"
+ ],	
+    "supportRoleId": "1447743349749715005",
+    "allowedRoleIds": [
     "1447732010889252884",
     "1447743349749715005"
-  ],
+ 
   "closeTimeFuncionou": 10,
   "closeTimeNaoFuncionou": 5
 }
