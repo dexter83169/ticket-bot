@@ -41,25 +41,23 @@ function fecharTicket(channel, tempo, unidade = "minutos") {
       : tempo * 60 * 1000;
 
   setTimeout(async () => {
-    if (!channel || channel.deleted) return;
+    if (!channel) return;
 
-    // 🔒 tenta enviar mensagem, mas NÃO quebra se falhar
     try {
-      if (
-        channel
-          .permissionsFor(channel.guild.members.me)
-          ?.has("SendMessages")
-      ) {
-        await channel.send("⏳ This ticket will be closed automatically.");
-      }
-    } catch (err) {
-      console.log("⚠️ Could not send closing message, continuing...");
-    }
+      // Mensagem opcional (não quebra se falhar)
+      await channel.send("⏳ This ticket will be closed automatically.");
+    } catch {}
 
-    // ⏱️ fecha o ticket SEMPRE
-    setTimeout(() => {
-      channel.delete().catch(() => {});
+    // Aguarda um pouco e fecha via Tickety
+    setTimeout(async () => {
+      try {
+        await channel.send("!close"); // 👈 comando Tickety
+        console.log("✅ Ticket closed via Tickety:", channel.id);
+      } catch (err) {
+        console.log("❌ Failed to close ticket via Tickety:", err.message);
+      }
     }, 3000);
+
   }, tempoMs);
 }
 
