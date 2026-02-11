@@ -35,7 +35,7 @@ client.once("clientReady", () => {
    CLOSE TICKET FUNCTION
 ================================ */
 function fecharTicket(channel, tempo, unidade = "minutos") {
-  let tempoMs =
+  const tempoMs =
     unidade === "horas"
       ? tempo * 60 * 60 * 1000
       : tempo * 60 * 1000;
@@ -43,8 +43,20 @@ function fecharTicket(channel, tempo, unidade = "minutos") {
   setTimeout(async () => {
     if (!channel || channel.deleted) return;
 
-    await channel.send("⏳ This ticket will be closed automatically.");
+    // 🔒 tenta enviar mensagem, mas NÃO quebra se falhar
+    try {
+      if (
+        channel
+          .permissionsFor(channel.guild.members.me)
+          ?.has("SendMessages")
+      ) {
+        await channel.send("⏳ This ticket will be closed automatically.");
+      }
+    } catch (err) {
+      console.log("⚠️ Could not send closing message, continuing...");
+    }
 
+    // ⏱️ fecha o ticket SEMPRE
     setTimeout(() => {
       channel.delete().catch(() => {});
     }, 3000);
@@ -141,7 +153,7 @@ client.on(Events.InteractionCreate, async interaction => {
       flags: MessageFlags.Ephemeral
     });
 
-    await interaction.channel.send(
+    await interaction.followUp(
       `\u200B\n🔴 The member reported that it didn't work.\n<@&${config.supportRoleId}>`
     );
 
