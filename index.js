@@ -30,26 +30,7 @@ const client = new Client({
 /* ===============================
    REGISTER SLASH COMMAND
 ================================ */
-const commands = [
-  new SlashCommandBuilder()
-    .setName("reply")
-    .setDescription("Send game confirmation buttons in the ticket")
-].map(cmd => cmd.toJSON());
 
-const rest = new REST({ version: "10" }).setToken(process.env.BOT_TOKEN);
-
-(async () => {
-  try {
-    console.log("⏳ Registering slash command...");
-    await rest.put(
-      Routes.applicationCommands("1470122326191247593"),
-      { body: commands }
-    );
-    console.log("✅ Slash command registered");
-  } catch (error) {
-    console.error(error);
-  }
-})();
 
 /* ===============================
    BOT ONLINE
