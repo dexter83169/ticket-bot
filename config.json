@@ -1,0 +1,11 @@
+{
+  
+  "supportRoleId": "1470137387077210264",
+  "ticketCategoryId": "1470137091886284986",
+  "allowedRoleIds": [
+    "1470891754537353337",
+    "ID_CARGO_MODERADOR"
+  ],
+  "closeTimeFuncionou": 10,
+  "closeTimeNaoFuncionou": 5
+}
