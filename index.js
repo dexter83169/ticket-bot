@@ -64,13 +64,13 @@ client.on(Events.InteractionCreate, async interaction => {
     if (interaction.commandName !== "reply") return;
 
     // ✅ Somente tickets criados pela Tickety
-    if (!interaction.channel.name.startsWith("ticket-")) {
-      await interaction.reply({
-        content: "❌ This command can only be used inside tickets.",
-        flags: MessageFlags.Ephemeral
-      });
-      return;
-    }
+    if (!config.ticketCategoryIds.includes(interaction.channel.parentId)) {
+  await interaction.reply({
+    content: "❌ This command can only be used inside tickets.",
+    flags: MessageFlags.Ephemeral
+  });
+  return;
+}
 
     // ✅ Permissão: Admin ou cargos permitidos
     const isAdmin = interaction.member.permissions.has(
