@@ -28,11 +28,6 @@ const client = new Client({
 });
 
 /* ===============================
-   REGISTER SLASH COMMAND
-================================ */
-
-
-/* ===============================
    BOT ONLINE
 ================================ */
 client.once("clientReady", () => {
@@ -68,8 +63,8 @@ client.on(Events.InteractionCreate, async interaction => {
   if (interaction.isChatInputCommand()) {
     if (interaction.commandName !== "reply") return;
 
-    // Only ticket channels
-    if (interaction.channel.parentId !== config.ticketCategoryId) {
+    // ✅ Somente tickets criados pela Tickety
+    if (!interaction.channel.name.startsWith("ticket-")) {
       await interaction.reply({
         content: "❌ This command can only be used inside tickets.",
         flags: MessageFlags.Ephemeral
@@ -77,7 +72,7 @@ client.on(Events.InteractionCreate, async interaction => {
       return;
     }
 
-    // Permission check
+    // ✅ Permissão: Admin ou cargos permitidos
     const isAdmin = interaction.member.permissions.has(
       PermissionsBitField.Flags.Administrator
     );
@@ -94,7 +89,7 @@ client.on(Events.InteractionCreate, async interaction => {
       return;
     }
 
-    // Buttons
+    // ✅ Botões
     const row = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
         .setCustomId("funcionou")
@@ -118,7 +113,9 @@ client.on(Events.InteractionCreate, async interaction => {
 
   /* ===== BUTTONS ===== */
   if (!interaction.isButton()) return;
-  if (interaction.channel.parentId !== config.ticketCategoryId) return;
+
+  // ✅ Tickety tickets: verifica pelo nome
+  if (!interaction.channel.name.startsWith("ticket-")) return;
 
   if (interaction.customId === "funcionou") {
     await interaction.reply({
