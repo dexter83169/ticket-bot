@@ -72,7 +72,7 @@ client.on(Events.InteractionCreate, async interaction => {
     if (interaction.channel.parentId !== config.ticketCategoryId) {
       await interaction.reply({
         content: "❌ This command can only be used inside tickets.",
-        ephemeral: true
+        flags: MessageFlags.Ephemeral
       });
       return;
     }
@@ -89,7 +89,7 @@ client.on(Events.InteractionCreate, async interaction => {
     if (!isAdmin && !hasAllowedRole) {
       await interaction.reply({
         content: "❌ You are not allowed to use this command.",
-        ephemeral: true
+        flags: MessageFlags.Ephemeral
       });
       return;
     }
