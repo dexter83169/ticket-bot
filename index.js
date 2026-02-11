@@ -9,10 +9,7 @@ const {
   Events,
   MessageFlags,
   EmbedBuilder,
-  PermissionsBitField,
-  SlashCommandBuilder,
-  REST,
-  Routes
+  PermissionsBitField
 } = require("discord.js");
 
 const config = require("./config.json");
@@ -63,16 +60,16 @@ client.on(Events.InteractionCreate, async interaction => {
   if (interaction.isChatInputCommand()) {
     if (interaction.commandName !== "reply") return;
 
-    // ✅ Somente tickets criados pela Tickety
+    // ✅ Somente tickets nas categorias configuradas
     if (!config.ticketCategoryIds.includes(interaction.channel.parentId)) {
-  await interaction.reply({
-    content: "❌ This command can only be used inside tickets.",
-    flags: MessageFlags.Ephemeral
-  });
-  return;
-}
+      await interaction.reply({
+        content: "❌ This command can only be used inside tickets.",
+        flags: MessageFlags.Ephemeral
+      });
+      return;
+    }
 
-    // ✅ Permissão: Admin ou cargos permitidos
+    // ✅ Permissões: Admin ou cargos permitidos
     const isAdmin = interaction.member.permissions.has(
       PermissionsBitField.Flags.Administrator
     );
@@ -89,7 +86,7 @@ client.on(Events.InteractionCreate, async interaction => {
       return;
     }
 
-    // ✅ Botões
+    // ✅ Botões dentro do canal do ticket
     const row = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
         .setCustomId("funcionou")
@@ -114,13 +111,13 @@ client.on(Events.InteractionCreate, async interaction => {
   /* ===== BUTTONS ===== */
   if (!interaction.isButton()) return;
 
-  // ✅ Tickety tickets: verifica pelo nome
-  if (!interaction.channel.name.startsWith("ticket-")) return;
+  // ✅ Só tickets válidos
+  if (!config.ticketCategoryIds.includes(interaction.channel.parentId)) return;
 
   if (interaction.customId === "funcionou") {
     await interaction.reply({
       content:
-        "\u200B\n✅ Excellent! Send a Screenshot Review in https://discord.com/channels/1447731387250507857/1449424868209594378.\n" +
+        "\u200B\n✅ Excellent! Send a Screenshot Review in this channel.\n" +
         `⏱️ You have ${config.closeTimeFuncionou} minutes to review before ticket close.`,
       flags: MessageFlags.Ephemeral
     });
