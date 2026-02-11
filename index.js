@@ -122,7 +122,7 @@ client.on(Events.InteractionCreate, async interaction => {
       flags: MessageFlags.Ephemeral
     });
 
-    await interaction.channel.send(
+    await interaction.followUp(
       "\u200B\nYou will be given a 24 hour cooldown to ensure fairness!"
     );
 
