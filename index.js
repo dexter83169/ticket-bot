@@ -51,7 +51,7 @@ function fecharTicket(channel, tempo, unidade = "minutos") {
     // Aguarda um pouco e fecha via Tickety
     setTimeout(async () => {
       try {
-        await channel.send("!close"); // 👈 comando Tickety
+        await channel.send("/close"); // 👈 comando Tickety
         console.log("✅ Ticket closed via Tickety:", channel.id);
       } catch (err) {
         console.log("❌ Failed to close ticket via Tickety:", err.message);
