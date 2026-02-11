@@ -117,7 +117,7 @@ client.on(Events.InteractionCreate, async interaction => {
   if (interaction.customId === "funcionou") {
     await interaction.reply({
       content:
-        "\u200B\n✅ Excellent! Send a Screenshot Review in this channel.\n" +
+        "\u200B\n✅ Excellent! Send a Screenshot Review in https://discord.com/channels/1447731387250507857/1449424868209594378.\n" +
         `⏱️ You have ${config.closeTimeFuncionou} minutes to review before ticket close.`,
       flags: MessageFlags.Ephemeral
     });
