@@ -125,44 +125,43 @@ client.on(Events.InteractionCreate, async interaction => {
 
   /* ===== FUNCIONOU ===== */
   if (interaction.customId === "funcionou") {
-    await interaction.reply({
-      content:
-        "\u200B\n✅ Excellent! Send a Screenshot Review in https://discord.com/channels/1447731387250507857/1449424868209594378.\n" +
-        `⏱️ You have ${config.closeTimeFuncionou} minutes before the ticket closes.`,
-      flags: MessageFlags.Ephemeral
-    });
+  await interaction.reply({
+    content:
+      "\u200B\n" +
+      "✅ **Excellent!**\n\n" +
+      "📸 Send a **Screenshot Review** here: https://discord.com/channels/1447731387250507857/1449424868209594378\n\n" +
+      "🕒 **You will be given a 24 hour cooldown to ensure fairness!**\n\n" +
+      `⏱️ This ticket will close in **${config.closeTimeFuncionou} minutes**.`,
+    flags: MessageFlags.Ephemeral
+  });
 
-    await interaction.channel.send(
-      "\u200B\nYou will be given a 24 hour cooldown to ensure fairness!"
-    );
+  fecharTicket(
+    interaction.channel,
+    config.closeTimeFuncionou,
+    "minutos"
+  );
+}
 
-    fecharTicket(
-      interaction.channel,
-      config.closeTimeFuncionou,
-      "minutos"
-    );
-  }
 
   /* ===== NÃO FUNCIONOU ===== */
   if (interaction.customId === "nao_funcionou") {
-    await interaction.reply({
-      content:
-        "\u200B\n❌ Support has been activated. Please wait for assistance.\n" +
-        `⏱️ This ticket will be closed in ${config.closeTimeNaoFuncionou} hours.`,
-      flags: MessageFlags.Ephemeral
-    });
+  await interaction.reply({
+    content:
+      "\u200B\n" +
+      "❌ **Support has been activated.**\n\n" +
+      "🔴 The member reported that it **didn't work**.\n" +
+      "🕒 Please wait for <@&${config.supportRoleId}>.\n\n" +
+      `⏱️ This ticket will close in **${config.closeTimeNaoFuncionou} hours**.`,
+    flags: MessageFlags.Ephemeral
+  });
 
-    await interaction.channel.send(
-      `\u200B\n🔴 The member reported that it didn't work.\n<@&${config.supportRoleId}>`
-    );
+  fecharTicket(
+    interaction.channel,
+    config.closeTimeNaoFuncionou,
+    "horas"
+  );
+}
 
-    fecharTicket(
-      interaction.channel,
-      config.closeTimeNaoFuncionou,
-      "horas"
-    );
-  }
-});
 
 /* ===============================
    LOGIN
