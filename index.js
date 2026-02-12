@@ -154,10 +154,7 @@ if (interaction.customId === "nao_funcionou") {
       flags: MessageFlags.Ephemeral
     });
 
-    fecharTicket(
-      interaction.channel,
-      config.closeTimeNaoFuncionou,
-      "horas"
+    
     );
   }
 
