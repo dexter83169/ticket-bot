@@ -155,7 +155,7 @@ if (interaction.customId === "nao_funcionou") {
     });
 
     
-    );
+    
   }
 
 });
