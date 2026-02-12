@@ -152,9 +152,15 @@ if (interaction.customId === "nao_funcionou") {
         "🔴 The member reported that it **didn't work**.\n" +
         `<@&${config.supportRoleId}>\n\n` +
         "🕒 Please wait for assistance.\n\n" +
+        `⏱️ This ticket will close in **${config.closeTimeNaoFuncionou} hours**.`,
       flags: MessageFlags.Ephemeral
     });
 
+    fecharTicket(
+      interaction.channel,
+      config.closeTimeNaoFuncionou,
+      "horas"
+    );
   }
 
 });
