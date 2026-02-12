@@ -145,32 +145,19 @@ client.on(Events.InteractionCreate, async interaction => {
 
   /* ===== NÃO FUNCIONOU ===== */
 if (interaction.customId === "nao_funcionou") {
-
-  if (!interaction.replied && !interaction.deferred) {
     await interaction.reply({
       content:
         "\u200B\n" +
         "❌ **Support has been activated.**\n\n" +
         "🔴 The member reported that it **didn't work**.\n" +
         `<@&${config.supportRoleId}>\n\n` +
-        "🕒 Please wait for assistance.",
+        "🕒 Please wait for assistance.\n\n" +
       flags: MessageFlags.Ephemeral
     });
-  } else {
-    await interaction.followUp({
-      content:
-        "\u200B\n" +
-        "❌ **Support has been activated.**\n\n" +
-        "🔴 The member reported that it **didn't work**.\n" +
-        `<@&${config.supportRoleId}>\n\n` +
-        "🕒 Please wait for assistance.",
-      flags: MessageFlags.Ephemeral
-    });
+
   }
 
-  // ❌ REMOVIDO: fecharTicket()
-}
-
+});
 
 /* ===============================
    LOGIN
