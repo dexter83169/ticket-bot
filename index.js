@@ -150,7 +150,7 @@ if (interaction.customId === "nao_funcionou") {
         "\u200B\n" +
         "❌ **Support has been activated.**\n\n" +
         "🔴 The member reported that it **didn't work**.\n\n" +
-        "🕒 Please wait for <@&${config.supportRoleId}>.",
+        "🕒 Please wait for @Assistant",
       flags: MessageFlags.Ephemeral
     });
 
