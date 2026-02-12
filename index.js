@@ -150,7 +150,8 @@ client.on(Events.InteractionCreate, async interaction => {
       "\u200B\n" +
       "❌ **Support has been activated.**\n\n" +
       "🔴 The member reported that it **didn't work**.\n" +
-      "🕒 Please wait for <@&${config.supportRoleId}>.\n\n" +
+      `<@&${config.supportRoleId}>\n\n` +
+      "🕒 Please wait for assistance.\n\n" +
       `⏱️ This ticket will close in **${config.closeTimeNaoFuncionou} hours**.`,
     flags: MessageFlags.Ephemeral
   });
