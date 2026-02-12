@@ -149,10 +149,8 @@ if (interaction.customId === "nao_funcionou") {
       content:
         "\u200B\n" +
         "❌ **Support has been activated.**\n\n" +
-        "🔴 The member reported that it **didn't work**.\n" +
-        `<@&${config.supportRoleId}>\n\n` +
-        "🕒 Please wait for assistance.\n\n" +
-        `⏱️ This ticket will close in **${config.closeTimeNaoFuncionou} hours**.`,
+        "🔴 The member reported that it **didn't work**.\n\n" +
+        "🕒 Please wait for <@&${config.supportRoleId}>.",
       flags: MessageFlags.Ephemeral
     });
 
