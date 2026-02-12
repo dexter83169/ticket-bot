@@ -40,26 +40,26 @@ function fecharTicket(channel, tempo, unidade = "minutos") {
       ? tempo * 60 * 60 * 1000
       : tempo * 60 * 1000;
 
+  console.log(
+    `⏱️ Ticket ${channel.id} will close in ${tempo} ${unidade}`
+  );
+
   setTimeout(async () => {
-    if (!channel) return;
+    if (!channel || channel.deleted) return;
 
     try {
-      // Mensagem opcional (não quebra se falhar)
       await channel.send("⏳ This ticket will be closed automatically.");
     } catch {}
 
-    // Aguarda um pouco e fecha via Tickety
-    setTimeout(async () => {
-      try {
-        await channel.send("/close"); // 👈 comando Tickety
-        console.log("✅ Ticket closed via Tickety:", channel.id);
-      } catch (err) {
-        console.log("❌ Failed to close ticket via Tickety:", err.message);
-      }
-    }, 3000);
-
+    try {
+      await channel.delete();
+      console.log("✅ Ticket closed automatically:", channel.id);
+    } catch (err) {
+      console.log("❌ Failed to close ticket:", err.message);
+    }
   }, tempoMs);
 }
+
 
 /* ===============================
    INTERACTIONS
@@ -128,7 +128,8 @@ client.on(Events.InteractionCreate, async interaction => {
     await interaction.reply({
       content:
         "\u200B\n✅ Excellent! Send a Screenshot Review in https://discord.com/channels/1447731387250507857/1449424868209594378.\n" +
-        `⏱️ You have ${config.closeTimeFuncionou} minutes to review before ticket close.`,
+        `\u200B\n⏱️ You have ${config.closeTimeFuncionou} minutes to review before ticket close.`,
+		`\u200B\n⏱️ You will be given a 24 hour cooldown to ensure fairness!`,
       flags: MessageFlags.Ephemeral
     });
 
