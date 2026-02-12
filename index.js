@@ -144,17 +144,17 @@ client.on(Events.InteractionCreate, async interaction => {
 
 
   /* ===== NÃO FUNCIONOU ===== */
-  if (interaction.customId === "nao_funcionou") {
+if (interaction.customId === "nao_funcionou") {
     await interaction.reply({
       content:
-        "\u200B\n❌ Support has been activated. Please wait for assistance.\n" +
-        `⏱️ This ticket will be closed in ${config.closeTimeNaoFuncionou} hours.`,
+        "\u200B\n" +
+        "❌ **Support has been activated.**\n\n" +
+        "🔴 The member reported that it **didn't work**.\n" +
+        `<@&${config.supportRoleId}>\n\n` +
+        "🕒 Please wait for assistance.\n\n" +
+        `⏱️ This ticket will close in **${config.closeTimeNaoFuncionou} hours**.`,
       flags: MessageFlags.Ephemeral
     });
-
-    await interaction.channel.send(
-      `\u200B\n🔴 The member reported that it didn't work.\n<@&${config.supportRoleId}>`
-    );
 
     fecharTicket(
       interaction.channel,
@@ -162,6 +162,7 @@ client.on(Events.InteractionCreate, async interaction => {
       "horas"
     );
   }
+
 });
 
 /* ===============================
