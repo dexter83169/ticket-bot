@@ -27,12 +27,12 @@ const client = new Client({
 /* ===============================
    BOT ONLINE
 ================================ */
-client.once("clientReady", () => {
+client.once(Events.ClientReady, () => {
   console.log(`🤖 Bot online as ${client.user.tag}`);
 });
 
 /* ===============================
-   CLOSE TICKET FUNCTION
+   CLOSE TICKET FUNCTION (AUTO)
 ================================ */
 function fecharTicket(channel, tempo, unidade = "minutos") {
   const tempoMs =
@@ -60,7 +60,6 @@ function fecharTicket(channel, tempo, unidade = "minutos") {
   }, tempoMs);
 }
 
-
 /* ===============================
    INTERACTIONS
 ================================ */
@@ -70,7 +69,7 @@ client.on(Events.InteractionCreate, async interaction => {
   if (interaction.isChatInputCommand()) {
     if (interaction.commandName !== "reply") return;
 
-    // ✅ Somente tickets nas categorias configuradas
+    // ✅ CHECK: must be inside a ticket category
     if (!config.ticketCategoryIds.includes(interaction.channel.parentId)) {
       await interaction.reply({
         content: "❌ This command can only be used inside tickets.",
@@ -79,7 +78,7 @@ client.on(Events.InteractionCreate, async interaction => {
       return;
     }
 
-    // ✅ Permissões: Admin ou cargos permitidos
+    // Permission check
     const isAdmin = interaction.member.permissions.has(
       PermissionsBitField.Flags.Administrator
     );
@@ -96,7 +95,7 @@ client.on(Events.InteractionCreate, async interaction => {
       return;
     }
 
-    // ✅ Botões dentro do canal do ticket
+    // Buttons
     const row = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
         .setCustomId("funcionou")
@@ -121,19 +120,19 @@ client.on(Events.InteractionCreate, async interaction => {
   /* ===== BUTTONS ===== */
   if (!interaction.isButton()) return;
 
-  // ✅ Só tickets válidos
+  // ✅ CHECK: must be ticket category
   if (!config.ticketCategoryIds.includes(interaction.channel.parentId)) return;
 
+  /* ===== FUNCIONOU ===== */
   if (interaction.customId === "funcionou") {
     await interaction.reply({
       content:
         "\u200B\n✅ Excellent! Send a Screenshot Review in https://discord.com/channels/1447731387250507857/1449424868209594378.\n" +
-        `\u200B\n⏱️ You have ${config.closeTimeFuncionou} minutes to review before ticket close.`,
-		`\u200B\n⏱️ You will be given a 24 hour cooldown to ensure fairness!`,
+        `⏱️ You have ${config.closeTimeFuncionou} minutes before the ticket closes.`,
       flags: MessageFlags.Ephemeral
     });
 
-    await interaction.followUp(
+    await interaction.channel.send(
       "\u200B\nYou will be given a 24 hour cooldown to ensure fairness!"
     );
 
@@ -144,6 +143,7 @@ client.on(Events.InteractionCreate, async interaction => {
     );
   }
 
+  /* ===== NÃO FUNCIONOU ===== */
   if (interaction.customId === "nao_funcionou") {
     await interaction.reply({
       content:
@@ -152,7 +152,7 @@ client.on(Events.InteractionCreate, async interaction => {
       flags: MessageFlags.Ephemeral
     });
 
-    await interaction.followUp(
+    await interaction.channel.send(
       `\u200B\n🔴 The member reported that it didn't work.\n<@&${config.supportRoleId}>`
     );
 
@@ -164,4 +164,7 @@ client.on(Events.InteractionCreate, async interaction => {
   }
 });
 
+/* ===============================
+   LOGIN
+================================ */
 client.login(process.env.BOT_TOKEN);
