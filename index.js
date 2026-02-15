@@ -125,9 +125,14 @@ client.on(Events.InteractionCreate, async interaction => {
 
   /* ===== FUNCIONOU ===== */
   if (interaction.customId === "funcionou") {
-	  
-	    // Define cooldown
-    const cooldownTime = config.cooldownHours * 60 * 60 * 1000;
+
+  try {
+    await interaction.deferUpdate();
+
+    const userId = interaction.user.id;
+    const now = Date.now();
+
+    const cooldownTime = (config.cooldownHours || 24) * 60 * 60 * 1000;
     cooldowns.set(userId, now + cooldownTime);
 
     // Desativar botões
@@ -144,14 +149,16 @@ client.on(Events.InteractionCreate, async interaction => {
         .setDisabled(true)
     );
 
-    await interaction.update({ components: [disabledRow] });
+     await interaction.message.edit({
+      components: [disabledRow]
+    });
 
    // Mensagem pública no ticket
     await interaction.channel.send(
       "\u200B\n" +
-      "✅ **Excellent!**\n\n" +
+      "✅ **Excellent ${interaction.user}**\n\n" +
       "📸 Send a **Screenshot Review** here and Ping your Helper: https://discord.com/channels/1447731387250507857/1449424868209594378\n\n" +
-      "🕒 **You will be given a 24 hour cooldown to ensure fairness!**\n\n" +
+      "🕒 **You will be given a ${config.cooldownHours || 24} hours cooldown to ensure fairness!**\n\n" +
       `⏱️ This ticket will close in **${config.closeTimeFuncionou} minutes**.`
   );
 
@@ -160,9 +167,10 @@ client.on(Events.InteractionCreate, async interaction => {
     config.closeTimeFuncionou,
     "minutos"
   );
+ } catch (err) {
+    console.log("Erro no botão funcionou:", err);
+  }
 }
-
-
   /* ===== NÃO FUNCIONOU ===== */
 if (interaction.customId === "nao_funcionou") {
     await interaction.update({ components: [] });
