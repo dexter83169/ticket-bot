@@ -117,46 +117,72 @@ client.on(Events.InteractionCreate, async interaction => {
   ============================== */
   if (interaction.customId === "funcionou") {
 
-    try {
-      await interaction.deferUpdate();
+  try {
+    await interaction.deferUpdate();
 
-      const cooldownTime = (config.cooldownHours || 24) * 60 * 60 * 1000;
-      cooldowns.set(userId, now + cooldownTime);
+    const member = interaction.member;
+    const cooldownRoleId = config.cooldownRoleId;
+    const cooldownHours = config.cooldownHours || 24;
 
-      const disabledRow = new ActionRowBuilder().addComponents(
-        new ButtonBuilder()
-          .setCustomId("funcionou")
-          .setLabel("✅ It worked")
-          .setStyle(ButtonStyle.Success)
-          .setDisabled(true),
-        new ButtonBuilder()
-          .setCustomId("nao_funcionou")
-          .setLabel("❌ It didn't work")
-          .setStyle(ButtonStyle.Danger)
-          .setDisabled(true)
-      );
-
-      await interaction.message.edit({
-        components: [disabledRow]
+    // 🔒 CHECK SE JÁ TEM O ROLE
+    if (member.roles.cache.has(cooldownRoleId)) {
+      return interaction.followUp({
+        content: `⛔ You are on cooldown for ${cooldownHours} hours.`,
+        ephemeral: true
       });
-
-      await interaction.channel.send(
-        `\n` +
-        `✅ **Excellent ${interaction.user}**\n\n` +
-        `📸 Send a **Screenshot Review** here and Ping your Helper: https://discord.com/channels/1447731387250507857/1449424868209594378\n\n` +
-        `🕒 **You will be given a ${config.cooldownHours || 24} hours cooldown to ensure fairness!**\n\n` +
-        `⏱️ This ticket will close in **${config.closeTimeFuncionou} minutes**.`
-      );
-
-      fecharTicket(
-        interaction.channel,
-        config.closeTimeFuncionou
-      );
-
-    } catch (err) {
-      console.log("Erro no botão funcionou:", err);
     }
+
+    // ➕ ADICIONAR ROLE
+    await member.roles.add(cooldownRoleId);
+
+    // ⏳ REMOVER ROLE DEPOIS DO TEMPO
+    setTimeout(async () => {
+      try {
+        if (member.roles.cache.has(cooldownRoleId)) {
+          await member.roles.remove(cooldownRoleId);
+        }
+      } catch (err) {
+        console.log("Erro removendo cooldown role:", err.message);
+      }
+    }, cooldownHours * 60 * 60 * 1000);
+
+    // 🔘 DESATIVAR BOTÕES
+    const disabledRow = new ActionRowBuilder().addComponents(
+      new ButtonBuilder()
+        .setCustomId("funcionou")
+        .setLabel("✅ It worked")
+        .setStyle(ButtonStyle.Success)
+        .setDisabled(true),
+      new ButtonBuilder()
+        .setCustomId("nao_funcionou")
+        .setLabel("❌ It didn't work")
+        .setStyle(ButtonStyle.Danger)
+        .setDisabled(true)
+    );
+
+    await interaction.message.edit({
+      components: [disabledRow]
+    });
+
+    // 📩 SUA MENSAGEM EXATA
+    await interaction.channel.send(
+      `\n` +
+      `✅ **Excellent ${interaction.user}**\n\n` +
+      `📸 Send a **Screenshot Review** here and Ping your Helper: https://discord.com/channels/1447731387250507857/1449424868209594378\n\n` +
+      `🕒 **You will be given a ${cooldownHours} hours cooldown to ensure fairness!**\n\n` +
+      `⏱️ This ticket will close in **${config.closeTimeFuncionou} minutes**.`
+    );
+
+    fecharTicket(
+      interaction.channel,
+      config.closeTimeFuncionou
+    );
+
+  } catch (err) {
+    console.log("Erro no botão funcionou:", err);
   }
+}
+
 
   /* ===============================
      NAO FUNCIONOU
