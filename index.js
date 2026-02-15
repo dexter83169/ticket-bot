@@ -125,6 +125,29 @@ client.on(Events.InteractionCreate, async interaction => {
     const cooldownHours = config.cooldownHours || 24;
 
     // 🔒 CHECK SE JÁ TEM O ROLE
+	
+	client.on("channelCreate", async channel => {
+
+  if (!channel.parentId) return;
+  if (!config.ticketCategoryIds.includes(channel.parentId)) return;
+
+  const guild = channel.guild;
+  const cooldownRoleId = config.cooldownRoleId;
+
+  const member = guild.members.cache.find(m =>
+    channel.permissionOverwrites.cache.has(m.id)
+  );
+
+  if (!member) return;
+
+  if (member.roles.cache.has(cooldownRoleId)) {
+    await channel.send("⛔ You are on cooldown. This ticket will be closed.");
+    setTimeout(() => channel.delete(), 3000);
+  }
+
+});
+
+
     if (interaction.member.roles.cache.has(cooldownRoleId)) {
     return interaction.reply({
         content: `⛔ You are on cooldown for ${cooldownHours} hours.`,
