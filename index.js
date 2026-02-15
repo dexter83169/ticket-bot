@@ -125,8 +125,8 @@ client.on(Events.InteractionCreate, async interaction => {
     const cooldownHours = config.cooldownHours || 24;
 
     // 🔒 CHECK SE JÁ TEM O ROLE
-    if (member.roles.cache.has(cooldownRoleId)) {
-      return interaction.followUp({
+    if (interaction.member.roles.cache.has(cooldownRoleId)) {
+    return interaction.reply({
         content: `⛔ You are on cooldown for ${cooldownHours} hours.`,
         ephemeral: true
       });
