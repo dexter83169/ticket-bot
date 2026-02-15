@@ -129,7 +129,7 @@ client.on(Events.InteractionCreate, async interaction => {
     content:
       "\u200B\n" +
       "✅ **Excellent!**\n\n" +
-      "📸 Send a **Screenshot Review** here: https://discord.com/channels/1447731387250507857/1449424868209594378\n\n" +
+      "📸 Send a **Screenshot Review** here and Ping your Helper: https://discord.com/channels/1447731387250507857/1449424868209594378\n\n" +
       "🕒 **You will be given a 24 hour cooldown to ensure fairness!**\n\n" +
       `⏱️ This ticket will close in **${config.closeTimeFuncionou} minutes**.`,
     flags: MessageFlags.Ephemeral
@@ -150,7 +150,7 @@ if (interaction.customId === "nao_funcionou") {
         "\u200B\n" +
         "❌ **Support has been activated.**\n\n" +
         "🔴 The member reported that it **didn't work**.\n\n" +
-        "🕒 Please wait for <@&1447743349749715005>",
+        "🕒 Please wait for <@&1447743349749715005			>",
       flags: MessageFlags.Ephemeral
     });
 
