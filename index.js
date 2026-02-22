@@ -160,26 +160,20 @@ client.on(Events.InteractionCreate, async interaction => {
         });
       }
 
-      await interaction.reply({ content: "✅ **Excellent ${interaction.user}**
+      await interaction.reply({ content: `
+✅ **Excellent ${interaction.user}**
 
 🕒 You received a ${cooldownHours} hours cooldown.
 
-⏱️ Ticket closes in ${config.closeTimeFuncionou} minutes.", flags: 64 });
+⏱️ Ticket closes in ${config.closeTimeFuncionou} minutes.
+`});
 
       hideButtons(interaction.message);
 
       await member.roles.add(cooldownRoleId).catch(err => console.log(err));
       startCooldown(interaction, member);
 
-      try {
-        await interaction.channel.send(`
-✅ **Excellent ${interaction.user}**
-
-🕒 You received a ${cooldownHours} hours cooldown.
-
-⏱️ Ticket closes in ${config.closeTimeFuncionou} minutes.
-        `);
-      } catch (err) {
+       catch (err) {
         console.log("Não foi possível enviar mensagem FUNCIONOU:", err.message);
       }
 
