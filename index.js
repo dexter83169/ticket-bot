@@ -31,6 +31,34 @@ client.once(Events.ClientReady, () => {
 });
 
 // ===============================
+// CLOSE TICKET FUNCTION - PERMISSÕES AUTOMÁTICAS
+// ===============================
+async function fecharTicket(channel, tempo) {
+  const tempoMs = tempo * 60 * 1000;
+
+  setTimeout(async () => {
+    if (!channel || channel.deleted) return;
+
+    try {
+      // Tenta redefinir permissões do canal (remove overrides)
+      try {
+        await channel.permissionOverwrites.set([]);
+      } catch (err) {
+        console.log("Não foi possível redefinir permissões do canal:", err.message);
+      }
+
+      // Envia aviso de fechamento
+      await channel.send("⏳ This ticket will be closed automatically.");
+
+      // Deleta o canal
+      await channel.delete();
+    } catch (err) {
+      console.log("Erro ao fechar ticket:", err.message);
+    }
+  }, tempoMs);
+}
+
+// ===============================
 // CLOSE TICKET FUNCTION
 // ===============================
 async function fecharTicket(channel, tempo) {
@@ -45,6 +73,7 @@ async function fecharTicket(channel, tempo) {
     }
   }, tempoMs);
 }
+
 
 // ===============================
 // CONTADOR DE COOLDOWN
