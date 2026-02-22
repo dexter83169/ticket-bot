@@ -100,94 +100,69 @@ client.on(Events.InteractionCreate, async interaction => {
   ============================== */
   if (interaction.customId === "funcionou") {
 
-    try {
+  try {
 
-      // 🔒 SE JÁ TEM ROLE → BLOQUEIA
-      if (member.roles.cache.has(cooldownRoleId)) {
-        return interaction.reply({
-          content: `⛔ You are already on cooldown for ${cooldownHours} hours.`,
-          ephemeral: true
-        });
-      }
+    const member = interaction.member;
+    const cooldownRoleId = config.cooldownRoleId;
+    const cooldownHours = config.cooldownHours || 24;
 
-      // Confirma clique sem duplicar resposta
-      await interaction.deferUpdate();
-
-      // ➕ ADICIONA ROLE
-      await member.roles.add(cooldownRoleId);
-
-      // ⏳ REMOVE ROLE DEPOIS DO TEMPO
-      setTimeout(async () => {
-        try {
-          const updatedMember = await interaction.guild.members.fetch(member.id);
-          if (updatedMember.roles.cache.has(cooldownRoleId)) {
-            await updatedMember.roles.remove(cooldownRoleId);
-          }
-        } catch (err) {
-          console.log("Erro removendo cooldown role:", err.message);
-        }
-      }, cooldownHours * 60 * 60 * 1000);
-
-      // 🔘 DESATIVA BOTÕES
-      const disabledRow = new ActionRowBuilder().addComponents(
-        new ButtonBuilder()
-          .setCustomId("funcionou")
-          .setLabel("✅ It worked")
-          .setStyle(ButtonStyle.Success)
-          .setDisabled(true),
-        new ButtonBuilder()
-          .setCustomId("nao_funcionou")
-          .setLabel("❌ It didn't work")
-          .setStyle(ButtonStyle.Danger)
-          .setDisabled(true)
-      );
-
-      await interaction.message.edit({
-        components: [disabledRow]
+    if (member.roles.cache.has(cooldownRoleId)) {
+      return interaction.reply({
+        content: `⛔ You are already on cooldown for ${cooldownHours} hours.`,
+        ephemeral: true
       });
-
-      // 📩 Mensagem final
-      await interaction.channel.send(
-        `\n` +
-        `✅ **Excellent ${interaction.user}**\n\n` +
-        `📸 Send a **Screenshot Review** here and Ping your Helper.\n\n` +
-        `🕒 **You received a ${cooldownHours} hours cooldown.**\n\n` +
-        `⏱️ This ticket will close in **${config.closeTimeFuncionou} minutes**.`
-      );
-
-      fecharTicket(
-        interaction.channel,
-        config.closeTimeFuncionou
-      );
-
-    } catch (err) {
-      console.log("Erro no botão funcionou:", err);
     }
+
+    await interaction.reply({
+      content: "✅ Confirmed!",
+      ephemeral: true
+    });
+
+    await member.roles.add(cooldownRoleId);
+
+    setTimeout(async () => {
+      try {
+        const updatedMember = await interaction.guild.members.fetch(member.id);
+        if (updatedMember.roles.cache.has(cooldownRoleId)) {
+          await updatedMember.roles.remove(cooldownRoleId);
+        }
+      } catch {}
+    }, cooldownHours * 60 * 60 * 1000);
+
+    await interaction.channel.send(
+      `✅ **Excellent ${interaction.user}**\n\n` +
+      `🕒 You received a ${cooldownHours} hours cooldown.\n\n` +
+      `⏱️ Ticket closes in ${config.closeTimeFuncionou} minutes.`
+    );
+
+    fecharTicket(interaction.channel, config.closeTimeFuncionou);
+
+  } catch (err) {
+    console.log("Erro no botão funcionou:", err);
   }
+}	
 
   /* ===============================
      NAO FUNCIONOU
   ============================== */
   if (interaction.customId === "nao_funcionou") {
 
-    try {
+  try {
 
-      await interaction.deferUpdate();
+    await interaction.reply({
+      content: "🔴 Support has been notified.",
+      ephemeral: true
+    });
 
-      await interaction.message.edit({ components: [] });
+    await interaction.channel.send(
+      `❌ **Support has been activated.**\n\n` +
+      `Please wait for <@&1447743349749715005>`
+    );
 
-      await interaction.channel.send(
-        `❌ **Support has been activated.**\n\n` +
-        `🔴 The member reported that it didn't work.\n\n` +
-        `🕒 Please wait for <@&1447743349749715005>`
-      );
-
-    } catch (err) {
-      console.log("Erro no botão nao_funcionou:", err);
-    }
+  } catch (err) {
+    console.log("Erro no botão nao_funcionou:", err);
   }
-
-});
+}
 
 /* ===============================
    LOGIN
