@@ -19,7 +19,7 @@ const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.GuildMembers // 🔥 Essencial para manipular roles
+    GatewayIntentBits.GuildMembers // Essencial para manipular roles
   ]
 });
 
@@ -59,6 +59,18 @@ client.on(Events.InteractionCreate, async interaction => {
   if (interaction.isChatInputCommand()) {
 
     if (interaction.commandName !== "reply") return;
+
+    const member = interaction.member;
+    const cooldownRoleId = config.cooldownRoleId;
+    const cooldownHours = config.cooldownHours || 24;
+
+    // 🔒 BLOQUEIA USUÁRIO EM COOLDOWN DE CRIAR TICKET
+    if (member.roles.cache.has(cooldownRoleId)) {
+      return interaction.reply({
+        content: `⛔ You are still on cooldown for ${cooldownHours} hours and cannot create a new ticket.`,
+        ephemeral: true
+      });
+    }
 
     if (!config.ticketCategoryIds.includes(interaction.channel.parentId)) {
       return interaction.reply({
@@ -101,7 +113,6 @@ client.on(Events.InteractionCreate, async interaction => {
   ============================== */
   if (interaction.customId === "funcionou") {
     try {
-      // 🔒 Se já tem cooldown
       if (member.roles.cache.has(cooldownRoleId)) {
         return interaction.reply({
           content: `⛔ You are already on cooldown for ${cooldownHours} hours.`,
@@ -109,7 +120,6 @@ client.on(Events.InteractionCreate, async interaction => {
         });
       }
 
-      // Confirma clique sem crash
       await interaction.reply({ content: "✅ Confirmed!", ephemeral: true });
 
       // Adiciona cooldown role
@@ -117,7 +127,7 @@ client.on(Events.InteractionCreate, async interaction => {
         console.log("Erro ao adicionar cooldown role:", err.message);
       });
 
-      // Remove role após tempo
+      // Remove role após o tempo
       setTimeout(async () => {
         try {
           const updatedMember = await interaction.guild.members.fetch(member.id);
@@ -129,7 +139,7 @@ client.on(Events.InteractionCreate, async interaction => {
         }
       }, cooldownHours * 60 * 60 * 1000);
 
-      // Envia mensagem final apenas se tiver permissão
+      // Envia mensagem final
       try {
         if (interaction.channel.permissionsFor(interaction.guild.members.me).has("SendMessages")) {
           await interaction.channel.send(
@@ -142,7 +152,7 @@ client.on(Events.InteractionCreate, async interaction => {
         console.log("Não foi possível enviar mensagem FUNCIONOU:", err.message);
       }
 
-      // Fecha ticket automaticamente
+      // Fecha ticket
       fecharTicket(interaction.channel, config.closeTimeFuncionou);
 
     } catch (err) {
@@ -157,7 +167,6 @@ client.on(Events.InteractionCreate, async interaction => {
     try {
       await interaction.reply({ content: "🔴 Support has been notified.", ephemeral: true });
 
-      // Envia mensagem apenas se tiver permissão
       try {
         if (interaction.channel.permissionsFor(interaction.guild.members.me).has("SendMessages")) {
           await interaction.channel.send(
