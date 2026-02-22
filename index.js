@@ -118,21 +118,21 @@ client.on(Events.InteractionCreate, async interaction => {
   if (interaction.customId === "funcionou") {
 
   try {
-    await interaction.deferUpdate();
 
     const member = interaction.member;
     const cooldownRoleId = config.cooldownRoleId;
     const cooldownHours = config.cooldownHours || 24;
 
-    // 🔒 CHECK SE JÁ TEM O ROLE
-	
-
-    if (interaction.member.roles.cache.has(cooldownRoleId)) {
-    return interaction.reply({
-        content: `⛔ You are on cooldown for ${cooldownHours} hours.`,
+    // 🔒 SE JÁ TEM ROLE → RESPONDE E PARA
+    if (member.roles.cache.has(cooldownRoleId)) {
+      return interaction.reply({
+        content: `⛔ You are already on cooldown for ${cooldownHours} hours.`,
         ephemeral: true
       });
     }
+
+    // ✅ CONFIRMA INTERACTION SEM RESPONDER DUPLICADO
+    await interaction.deferUpdate();
 
     // ➕ ADICIONAR ROLE
     await member.roles.add(cooldownRoleId);
@@ -140,8 +140,9 @@ client.on(Events.InteractionCreate, async interaction => {
     // ⏳ REMOVER ROLE DEPOIS DO TEMPO
     setTimeout(async () => {
       try {
-        if (member.roles.cache.has(cooldownRoleId)) {
-          await member.roles.remove(cooldownRoleId);
+        const updatedMember = await interaction.guild.members.fetch(member.id);
+        if (updatedMember.roles.cache.has(cooldownRoleId)) {
+          await updatedMember.roles.remove(cooldownRoleId);
         }
       } catch (err) {
         console.log("Erro removendo cooldown role:", err.message);
@@ -166,11 +167,12 @@ client.on(Events.InteractionCreate, async interaction => {
       components: [disabledRow]
     });
 
-    // 📩 SUA MENSAGEM EXATA
+    // 📩 MENSAGEM FINAL
     await interaction.channel.send(
       `\n` +
       `✅ **Excellent ${interaction.user}**\n\n` +
-      `📸 Send a **Screenshot Review** here and Ping your Helper: https://discord.com/channels/1447731387250507857/1449424868209594378\n\n` +
+      `📸 Send a **Screenshot Review** here and Ping your Helper:\n` +
+      `https://discord.com/channels/1447731387250507857/1449424868209594378\n\n` +
       `🕒 **You will be given a ${cooldownHours} hours cooldown to ensure fairness!**\n\n` +
       `⏱️ This ticket will close in **${config.closeTimeFuncionou} minutes**.`
     );
@@ -184,7 +186,6 @@ client.on(Events.InteractionCreate, async interaction => {
     console.log("Erro no botão funcionou:", err);
   }
 }
-
 
   /* ===============================
      NAO FUNCIONOU
