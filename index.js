@@ -164,9 +164,9 @@ client.on(Events.InteractionCreate, async interaction => {
       await interaction.reply({
         content: `✅ **Excellent ${interaction.user}**
 
-📸 Send a **Screenshot Review** and Ping your Helper here: https://discord.com/channels/1447731387250507857/1449424868209594378.
+🕒 You have 10 minutes to complete the review before receiving a cooldown.
 
-🕒 You received a ${cooldownHours} hours cooldown.
+📸 Send a **SCREENSHOT REVIEW** and Ping your Helper here: https://discord.com/channels/1447731387250507857/1449424868209594378.
 
 ⏱️ Ticket closes in ${config.closeTimeFuncionou} minutes.`,
         flags: 64
