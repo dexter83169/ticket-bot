@@ -141,7 +141,9 @@ client.on(Events.InteractionCreate, async interaction => {
       }
 
       // Confirma clique
-      await interaction.reply({ content: "✅ Confirmed!", flags: 64 });
+      await interaction.reply({ content: "✅ **Excellent ${interaction.user}**\n\n` +
+          `🕒 You received a ${cooldownHours} hours cooldown.\n\n` +
+          `⏱️ Ticket closes in ${config.closeTimeFuncionou} minutes.`", flags: 64 });
 
       // Oculta botões
       hideButtons(interaction.message);
@@ -163,14 +165,7 @@ client.on(Events.InteractionCreate, async interaction => {
         }
       }, cooldownHours * 60 * 60 * 1000);
 
-      // Envia mensagem final
-      try {
-        await interaction.channel.send(
-          `✅ **Excellent ${interaction.user}**\n\n` +
-          `🕒 You received a ${cooldownHours} hours cooldown.\n\n` +
-          `⏱️ Ticket closes in ${config.closeTimeFuncionou} minutes.`
-        );
-      } catch (err) {
+       catch (err) {
         console.log("Não foi possível enviar mensagem FUNCIONOU:", err.message);
       }
 
@@ -187,18 +182,13 @@ client.on(Events.InteractionCreate, async interaction => {
   ============================== */
   if (interaction.customId === "nao_funcionou") {
     try {
-      await interaction.reply({ content: "🔴 Support has been notified.", flags: 64 });
+      await interaction.reply({ content: "🔴 Support has been notified"\n\n` +
+          `Please wait for <@&1447743349749715005>`, flags: 64 });
 
       // Oculta botões
       hideButtons(interaction.message);
 
-      // Envia mensagem
-      try {
-        await interaction.channel.send(
-          `❌ **Support has been activated.**\n\n` +
-          `Please wait for <@&1447743349749715005>`
-        );
-      } catch (err) {
+       catch (err) {
         console.log("Não foi possível enviar mensagem NAO FUNCIONOU:", err.message);
       }
 
