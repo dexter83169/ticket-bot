@@ -192,6 +192,22 @@ client.on(Events.InteractionCreate, async interaction => {
       console.log("Erro no botão funcionou:", err);
     }
   }
+  
+   // ✅ Fecha o ticket automaticamente após closeTimeFuncionou minutos
+    setTimeout(async () => {
+      if (!interaction.channel || interaction.channel.deleted) return;
+      try {
+        await interaction.channel.send("⏳ This ticket will be closed automatically.");
+        await interaction.channel.delete();
+      } catch (err) {
+        console.log("Erro ao fechar ticket automaticamente:", err.message);
+      }
+    }, config.closeTimeFuncionou * 60 * 1000);
+
+  } catch (err) {
+    console.log("Erro no botão funcionou:", err);
+  }
+}
 
   // ===============================
   // NAO FUNCIONOU
