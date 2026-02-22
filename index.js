@@ -160,23 +160,29 @@ client.on(Events.InteractionCreate, async interaction => {
         });
       }
 
+      // Mensagem confirmando
       await interaction.reply({ content: `
 ✅ **Excellent ${interaction.user}**
 
 🕒 You received a ${cooldownHours} hours cooldown.
 
 ⏱️ Ticket closes in ${config.closeTimeFuncionou} minutes.
-`});
+`, flags: 64 });
 
-      hideButtons(interaction.message);
+      // Desativa os botões
+      await hideButtons(interaction.message);
 
-      await member.roles.add(cooldownRoleId).catch(err => console.log(err));
-      startCooldown(interaction, member);
-
-       catch (err) {
-        console.log("Não foi possível enviar mensagem FUNCIONOU:", err.message);
+      // Adiciona role de cooldown
+      try {
+        await member.roles.add(cooldownRoleId);
+      } catch (err) {
+        console.log("Não foi possível adicionar cooldown role:", err.message);
       }
 
+      // Inicia contador de cooldown
+      startCooldown(interaction, member);
+
+      // Fecha o ticket automaticamente
       fecharTicket(interaction.channel, config.closeTimeFuncionou);
 
     } catch (err) {
@@ -189,11 +195,10 @@ client.on(Events.InteractionCreate, async interaction => {
   // ===============================
   if (interaction.customId === "nao_funcionou") {
     try {
-      await interaction.reply({ content: "❌ **Support has been activated.**
+      await interaction.reply({ content: `❌ **Support has been activated.**\n\nPlease wait for <@&1447743349749715005>`, flags: 64 });
 
-Please wait for <@&1447743349749715005>", flags: 64 });
-
-      hideButtons(interaction.message);
+      // Desativa os botões
+      await hideButtons(interaction.message);
 
       try {
         await interaction.channel.send(`
