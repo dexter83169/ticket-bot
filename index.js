@@ -19,7 +19,7 @@ const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.GuildMembers // 🔥 ADICIONADO
+    GatewayIntentBits.GuildMembers // 🔥 Essencial para manipular roles
   ]
 });
 
@@ -40,7 +40,9 @@ function fecharTicket(channel, tempo) {
     if (!channel || channel.deleted) return;
 
     try {
-      await channel.send("⏳ This ticket will be closed automatically.");
+      if (channel.permissionsFor(channel.guild.members.me).has("SendMessages")) {
+        await channel.send("⏳ This ticket will be closed automatically.");
+      }
       await channel.delete();
     } catch (err) {
       console.log("Erro ao fechar ticket:", err.message);
@@ -88,7 +90,6 @@ client.on(Events.InteractionCreate, async interaction => {
 
   /* ===== BUTTONS ===== */
   if (!interaction.isButton()) return;
-
   if (!config.ticketCategoryIds.includes(interaction.channel.parentId)) return;
 
   const member = interaction.member;
@@ -99,70 +100,80 @@ client.on(Events.InteractionCreate, async interaction => {
      FUNCIONOU
   ============================== */
   if (interaction.customId === "funcionou") {
+    try {
+      // 🔒 Se já tem cooldown
+      if (member.roles.cache.has(cooldownRoleId)) {
+        return interaction.reply({
+          content: `⛔ You are already on cooldown for ${cooldownHours} hours.`,
+          ephemeral: true
+        });
+      }
 
-  try {
+      // Confirma clique sem crash
+      await interaction.reply({ content: "✅ Confirmed!", ephemeral: true });
 
-    const member = interaction.member;
-    const cooldownRoleId = config.cooldownRoleId;
-    const cooldownHours = config.cooldownHours || 24;
-
-    if (member.roles.cache.has(cooldownRoleId)) {
-      return interaction.reply({
-        content: `⛔ You are already on cooldown for ${cooldownHours} hours.`,
-        ephemeral: true
+      // Adiciona cooldown role
+      await member.roles.add(cooldownRoleId).catch(err => {
+        console.log("Erro ao adicionar cooldown role:", err.message);
       });
-    }
 
-    await interaction.reply({
-      content: "✅ Confirmed!",
-      ephemeral: true
-    });
-
-    await member.roles.add(cooldownRoleId);
-
-    setTimeout(async () => {
-      try {
-        const updatedMember = await interaction.guild.members.fetch(member.id);
-        if (updatedMember.roles.cache.has(cooldownRoleId)) {
-          await updatedMember.roles.remove(cooldownRoleId);
+      // Remove role após tempo
+      setTimeout(async () => {
+        try {
+          const updatedMember = await interaction.guild.members.fetch(member.id);
+          if (updatedMember.roles.cache.has(cooldownRoleId)) {
+            await updatedMember.roles.remove(cooldownRoleId);
+          }
+        } catch (err) {
+          console.log("Erro removendo cooldown role:", err.message);
         }
-      } catch {}
-    }, cooldownHours * 60 * 60 * 1000);
+      }, cooldownHours * 60 * 60 * 1000);
 
-    await interaction.channel.send(
-      `✅ **Excellent ${interaction.user}**\n\n` +
-      `🕒 You received a ${cooldownHours} hours cooldown.\n\n` +
-      `⏱️ Ticket closes in ${config.closeTimeFuncionou} minutes.`
-    );
+      // Envia mensagem final apenas se tiver permissão
+      try {
+        if (interaction.channel.permissionsFor(interaction.guild.members.me).has("SendMessages")) {
+          await interaction.channel.send(
+            `✅ **Excellent ${interaction.user}**\n\n` +
+            `🕒 You received a ${cooldownHours} hours cooldown.\n\n` +
+            `⏱️ Ticket closes in ${config.closeTimeFuncionou} minutes.`
+          );
+        }
+      } catch (err) {
+        console.log("Não foi possível enviar mensagem FUNCIONOU:", err.message);
+      }
 
-    fecharTicket(interaction.channel, config.closeTimeFuncionou);
+      // Fecha ticket automaticamente
+      fecharTicket(interaction.channel, config.closeTimeFuncionou);
 
-  } catch (err) {
-    console.log("Erro no botão funcionou:", err);
+    } catch (err) {
+      console.log("Erro no botão funcionou:", err);
+    }
   }
-}	
 
   /* ===============================
      NAO FUNCIONOU
   ============================== */
   if (interaction.customId === "nao_funcionou") {
+    try {
+      await interaction.reply({ content: "🔴 Support has been notified.", ephemeral: true });
 
-  try {
+      // Envia mensagem apenas se tiver permissão
+      try {
+        if (interaction.channel.permissionsFor(interaction.guild.members.me).has("SendMessages")) {
+          await interaction.channel.send(
+            `❌ **Support has been activated.**\n\n` +
+            `Please wait for <@&1447743349749715005>`
+          );
+        }
+      } catch (err) {
+        console.log("Não foi possível enviar mensagem NAO FUNCIONOU:", err.message);
+      }
 
-    await interaction.reply({
-      content: "🔴 Support has been notified.",
-      ephemeral: true
-    });
-
-    await interaction.channel.send(
-      `❌ **Support has been activated.**\n\n` +
-      `Please wait for <@&1447743349749715005>`
-    );
-
-  } catch (err) {
-    console.log("Erro no botão nao_funcionou:", err);
+    } catch (err) {
+      console.log("Erro no botão nao_funcionou:", err);
+    }
   }
-}
+
 });
 
 /* ===============================
