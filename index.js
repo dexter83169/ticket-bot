@@ -164,6 +164,8 @@ client.on(Events.InteractionCreate, async interaction => {
       await interaction.reply({ content: `
 ✅ **Excellent ${interaction.user}**
 
+📸 Send a **Screenshot Review** and Ping your Helper here: https://discord.com/channels/1447731387250507857/1449424868209594378.
+
 🕒 You received a ${cooldownHours} hours cooldown.
 
 ⏱️ Ticket closes in ${config.closeTimeFuncionou} minutes.
@@ -200,13 +202,7 @@ client.on(Events.InteractionCreate, async interaction => {
       // Desativa os botões
       await hideButtons(interaction.message);
 
-      try {
-        await interaction.channel.send(`
-❌ **Support has been activated.**
-
-Please wait for <@&1447743349749715005>
-        `);
-      } catch (err) {
+       catch (err) {
         console.log("Não foi possível enviar mensagem NAO FUNCIONOU:", err.message);
       }
 
