@@ -40,9 +40,7 @@ function fecharTicket(channel, tempo) {
     if (!channel || channel.deleted) return;
 
     try {
-      if (channel.permissionsFor(channel.guild.members.me).has("SendMessages")) {
-        await channel.send("⏳ This ticket will be closed automatically.");
-      }
+      await channel.send("⏳ This ticket will be closed automatically.");
       await channel.delete();
     } catch (err) {
       console.log("Erro ao fechar ticket:", err.message);
@@ -64,7 +62,7 @@ client.on(Events.InteractionCreate, async interaction => {
     const cooldownRoleId = config.cooldownRoleId;
     const cooldownHours = config.cooldownHours || 24;
 
-    // 🔒 BLOQUEIO DE CRIAÇÃO DE TICKET SE USUÁRIO ESTIVER EM COOLDOWN
+    // Bloqueio de criação de ticket se usuário estiver em cooldown
     if (member.roles.cache.has(cooldownRoleId)) {
       return interaction.reply({
         content: `⛔ You are still on cooldown for ${cooldownHours} hours and cannot create a new ticket.`,
@@ -79,6 +77,7 @@ client.on(Events.InteractionCreate, async interaction => {
       });
     }
 
+    // Botões iniciais
     const row = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
         .setCustomId("funcionou")
@@ -108,6 +107,27 @@ client.on(Events.InteractionCreate, async interaction => {
   const cooldownRoleId = config.cooldownRoleId;
   const cooldownHours = config.cooldownHours || 24;
 
+  // Função auxiliar para ocultar botões
+  const hideButtons = async (message) => {
+    const disabledRow = new ActionRowBuilder().addComponents(
+      new ButtonBuilder()
+        .setCustomId("funcionou")
+        .setLabel("✅ It worked")
+        .setStyle(ButtonStyle.Success)
+        .setDisabled(true),
+      new ButtonBuilder()
+        .setCustomId("nao_funcionou")
+        .setLabel("❌ It didn't work")
+        .setStyle(ButtonStyle.Danger)
+        .setDisabled(true)
+    );
+    try {
+      await message.edit({ components: [disabledRow] });
+    } catch {
+      // ignora se não tiver permissão
+    }
+  };
+
   /* ===============================
      FUNCIONOU
   ============================== */
@@ -120,7 +140,11 @@ client.on(Events.InteractionCreate, async interaction => {
         });
       }
 
+      // Confirma clique
       await interaction.reply({ content: "✅ Confirmed!", flags: 64 });
+
+      // Oculta botões
+      hideButtons(interaction.message);
 
       // Adiciona cooldown role
       await member.roles.add(cooldownRoleId).catch(err => {
@@ -139,15 +163,13 @@ client.on(Events.InteractionCreate, async interaction => {
         }
       }, cooldownHours * 60 * 60 * 1000);
 
-      // Envia mensagem final apenas se tiver permissão
+      // Envia mensagem final
       try {
-        if (interaction.channel.permissionsFor(interaction.guild.members.me).has("SendMessages")) {
-          await interaction.channel.send(
-            `✅ **Excellent ${interaction.user}**\n\n` +
-            `🕒 You received a ${cooldownHours} hours cooldown.\n\n` +
-            `⏱️ Ticket closes in ${config.closeTimeFuncionou} minutes.`
-          );
-        }
+        await interaction.channel.send(
+          `✅ **Excellent ${interaction.user}**\n\n` +
+          `🕒 You received a ${cooldownHours} hours cooldown.\n\n` +
+          `⏱️ Ticket closes in ${config.closeTimeFuncionou} minutes.`
+        );
       } catch (err) {
         console.log("Não foi possível enviar mensagem FUNCIONOU:", err.message);
       }
@@ -167,13 +189,15 @@ client.on(Events.InteractionCreate, async interaction => {
     try {
       await interaction.reply({ content: "🔴 Support has been notified.", flags: 64 });
 
+      // Oculta botões
+      hideButtons(interaction.message);
+
+      // Envia mensagem
       try {
-        if (interaction.channel.permissionsFor(interaction.guild.members.me).has("SendMessages")) {
-          await interaction.channel.send(
-            `❌ **Support has been activated.**\n\n` +
-            `Please wait for <@&1447743349749715005>`
-          );
-        }
+        await interaction.channel.send(
+          `❌ **Support has been activated.**\n\n` +
+          `Please wait for <@&1447743349749715005>`
+        );
       } catch (err) {
         console.log("Não foi possível enviar mensagem NAO FUNCIONOU:", err.message);
       }
