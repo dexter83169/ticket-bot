@@ -160,7 +160,11 @@ client.on(Events.InteractionCreate, async interaction => {
         });
       }
 
-      await interaction.reply({ content: "✅ Confirmed!", flags: 64 });
+      await interaction.reply({ content: "✅ **Excellent ${interaction.user}**
+
+🕒 You received a ${cooldownHours} hours cooldown.
+
+⏱️ Ticket closes in ${config.closeTimeFuncionou} minutes.", flags: 64 });
 
       hideButtons(interaction.message);
 
@@ -191,7 +195,9 @@ client.on(Events.InteractionCreate, async interaction => {
   // ===============================
   if (interaction.customId === "nao_funcionou") {
     try {
-      await interaction.reply({ content: "🔴 Support has been notified.", flags: 64 });
+      await interaction.reply({ content: "❌ **Support has been activated.**
+
+Please wait for <@&1447743349749715005>", flags: 64 });
 
       hideButtons(interaction.message);
 
