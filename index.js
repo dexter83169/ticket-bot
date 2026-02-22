@@ -12,9 +12,9 @@ const {
 
 const config = require("./config.json");
 
-/* ===============================
-   CLIENT
-================================ */
+// ===============================
+// CLIENT
+// ===============================
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
@@ -23,22 +23,20 @@ const client = new Client({
   ]
 });
 
-/* ===============================
-   BOT ONLINE
-================================ */
+// ===============================
+// BOT ONLINE
+// ===============================
 client.once(Events.ClientReady, () => {
   console.log(`🤖 Bot online como ${client.user.tag}`);
 });
 
-/* ===============================
-   CLOSE TICKET FUNCTION
-================================ */
+// ===============================
+// CLOSE TICKET FUNCTION
+// ===============================
 function fecharTicket(channel, tempo) {
   const tempoMs = tempo * 60 * 1000;
-
   setTimeout(async () => {
     if (!channel || channel.deleted) return;
-
     try {
       await channel.send("⏳ This ticket will be closed automatically.");
       await channel.delete();
@@ -48,24 +46,50 @@ function fecharTicket(channel, tempo) {
   }, tempoMs);
 }
 
-/* ===============================
-   INTERACTIONS
-================================ */
+// ===============================
+// CONTADOR DE COOLDOWN
+// ===============================
+const cooldowns = new Map();
+
+function startCooldown(interaction, member) {
+  const cooldownHours = config.cooldownHours || 24;
+  const expiration = Date.now() + cooldownHours * 60 * 60 * 1000;
+  cooldowns.set(member.id, expiration);
+
+  const interval = setInterval(async () => {
+    const remaining = expiration - Date.now();
+    if (remaining <= 0) {
+      clearInterval(interval);
+      cooldowns.delete(member.id);
+      return;
+    }
+
+    const hours = Math.floor(remaining / (1000 * 60 * 60));
+    const minutes = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
+
+    try {
+      await interaction.channel.send(`⏱️ **Cooldown**: ${hours}h ${minutes}m restantes para ${member}`);
+    } catch {
+      // ignora se não tiver permissão
+    }
+  }, 60 * 1000);
+}
+
+// ===============================
+// INTERACTIONS
+// ===============================
 client.on(Events.InteractionCreate, async interaction => {
 
-  /* ===== SLASH COMMAND ===== */
   if (interaction.isChatInputCommand()) {
-
     if (interaction.commandName !== "reply") return;
 
     const member = interaction.member;
     const cooldownRoleId = config.cooldownRoleId;
-    const cooldownHours = config.cooldownHours || 24;
 
-    // Bloqueio de criação de ticket se usuário estiver em cooldown
+    // Bloqueio se estiver em cooldown
     if (member.roles.cache.has(cooldownRoleId)) {
       return interaction.reply({
-        content: `⛔ You are still on cooldown for ${cooldownHours} hours and cannot create a new ticket.`,
+        content: `⛔ You are still on cooldown and cannot create a new ticket.`,
         flags: 64
       });
     }
@@ -77,7 +101,6 @@ client.on(Events.InteractionCreate, async interaction => {
       });
     }
 
-    // Botões iniciais
     const row = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
         .setCustomId("funcionou")
@@ -99,7 +122,7 @@ client.on(Events.InteractionCreate, async interaction => {
     });
   }
 
-  /* ===== BUTTONS ===== */
+  // ===== BUTTONS =====
   if (!interaction.isButton()) return;
   if (!config.ticketCategoryIds.includes(interaction.channel.parentId)) return;
 
@@ -107,7 +130,6 @@ client.on(Events.InteractionCreate, async interaction => {
   const cooldownRoleId = config.cooldownRoleId;
   const cooldownHours = config.cooldownHours || 24;
 
-  // Função auxiliar para ocultar botões
   const hideButtons = async (message) => {
     const disabledRow = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
@@ -123,14 +145,12 @@ client.on(Events.InteractionCreate, async interaction => {
     );
     try {
       await message.edit({ components: [disabledRow] });
-    } catch {
-      // ignora se não tiver permissão
-    }
+    } catch {}
   };
 
-  /* ===============================
-     FUNCIONOU
-  ============================== */
+  // ===============================
+  // FUNCIONOU
+  // ===============================
   if (interaction.customId === "funcionou") {
     try {
       if (member.roles.cache.has(cooldownRoleId)) {
@@ -140,36 +160,25 @@ client.on(Events.InteractionCreate, async interaction => {
         });
       }
 
-      // Confirma clique
-      await interaction.reply({ content: "✅ **Excellent ${interaction.user}**\n\n` +
-          `🕒 You received a ${cooldownHours} hours cooldown.\n\n` +
-          `⏱️ Ticket closes in ${config.closeTimeFuncionou} minutes.`", flags: 64 });
+      await interaction.reply({ content: "✅ Confirmed!", flags: 64 });
 
-      // Oculta botões
       hideButtons(interaction.message);
 
-      // Adiciona cooldown role
-      await member.roles.add(cooldownRoleId).catch(err => {
-        console.log("Erro ao adicionar cooldown role:", err.message);
-      });
+      await member.roles.add(cooldownRoleId).catch(err => console.log(err));
+      startCooldown(interaction, member);
 
-      // Remove role após o tempo
-      setTimeout(async () => {
-        try {
-          const updatedMember = await interaction.guild.members.fetch(member.id);
-          if (updatedMember.roles.cache.has(cooldownRoleId)) {
-            await updatedMember.roles.remove(cooldownRoleId);
-          }
-        } catch (err) {
-          console.log("Erro removendo cooldown role:", err.message);
-        }
-      }, cooldownHours * 60 * 60 * 1000);
+      try {
+        await interaction.channel.send(`
+✅ **Excellent ${interaction.user}**
 
-       catch (err) {
+🕒 You received a ${cooldownHours} hours cooldown.
+
+⏱️ Ticket closes in ${config.closeTimeFuncionou} minutes.
+        `);
+      } catch (err) {
         console.log("Não foi possível enviar mensagem FUNCIONOU:", err.message);
       }
 
-      // Fecha ticket
       fecharTicket(interaction.channel, config.closeTimeFuncionou);
 
     } catch (err) {
@@ -177,18 +186,22 @@ client.on(Events.InteractionCreate, async interaction => {
     }
   }
 
-  /* ===============================
-     NAO FUNCIONOU
-  ============================== */
+  // ===============================
+  // NAO FUNCIONOU
+  // ===============================
   if (interaction.customId === "nao_funcionou") {
     try {
-      await interaction.reply({ content: "🔴 Support has been notified"\n\n` +
-          `Please wait for <@&1447743349749715005>`, flags: 64 });
+      await interaction.reply({ content: "🔴 Support has been notified.", flags: 64 });
 
-      // Oculta botões
       hideButtons(interaction.message);
 
-       catch (err) {
+      try {
+        await interaction.channel.send(`
+❌ **Support has been activated.**
+
+Please wait for <@&1447743349749715005>
+        `);
+      } catch (err) {
         console.log("Não foi possível enviar mensagem NAO FUNCIONOU:", err.message);
       }
 
@@ -199,7 +212,7 @@ client.on(Events.InteractionCreate, async interaction => {
 
 });
 
-/* ===============================
-   LOGIN
-================================ */
+// ===============================
+// LOGIN
+// ===============================
 client.login(process.env.BOT_TOKEN);
