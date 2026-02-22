@@ -163,6 +163,7 @@ client.on(Events.InteractionCreate, async interaction => {
     console.log("Erro no botão nao_funcionou:", err);
   }
 }
+});
 
 /* ===============================
    LOGIN
