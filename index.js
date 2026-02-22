@@ -33,7 +33,7 @@ client.once(Events.ClientReady, () => {
 // ===============================
 // CLOSE TICKET FUNCTION
 // ===============================
-function fecharTicket(channel, tempo) {
+async function fecharTicket(channel, tempo) {
   const tempoMs = tempo * 60 * 1000;
   setTimeout(async () => {
     if (!channel || channel.deleted) return;
@@ -56,7 +56,7 @@ function startCooldown(interaction, member) {
   const expiration = Date.now() + cooldownHours * 60 * 60 * 1000;
   cooldowns.set(member.id, expiration);
 
-  const interval = setInterval(async () => {
+  const interval = setInterval(() => {
     const remaining = expiration - Date.now();
     if (remaining <= 0) {
       clearInterval(interval);
@@ -67,11 +67,9 @@ function startCooldown(interaction, member) {
     const hours = Math.floor(remaining / (1000 * 60 * 60));
     const minutes = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
 
-    try {
-      await interaction.channel.send(`⏱️ **Cooldown**: ${hours}h ${minutes}m restantes para ${member}`);
-    } catch {
-      // ignora se não tiver permissão
-    }
+    // Aqui não envia mensagem, pois pode gerar spam
+    // Se quiser notificação, descomente a linha abaixo
+    // interaction.channel.send(`⏱️ **Cooldown**: ${hours}h ${minutes}m restantes para ${member}`);
   }, 60 * 1000);
 }
 
@@ -79,14 +77,12 @@ function startCooldown(interaction, member) {
 // INTERACTIONS
 // ===============================
 client.on(Events.InteractionCreate, async interaction => {
-
   if (interaction.isChatInputCommand()) {
     if (interaction.commandName !== "reply") return;
 
     const member = interaction.member;
     const cooldownRoleId = config.cooldownRoleId;
 
-    // Bloqueio se estiver em cooldown
     if (member.roles.cache.has(cooldownRoleId)) {
       return interaction.reply({
         content: `⛔ You are still on cooldown and cannot create a new ticket.`,
@@ -189,44 +185,27 @@ client.on(Events.InteractionCreate, async interaction => {
       fecharTicket(interaction.channel, config.closeTimeFuncionou);
 
     } catch (err) {
-      console.log("Erro no botão funcionou:", err);
+      console.log("Erro no botão funcionou:", err.message);
     }
   }
-  
-   // ✅ Fecha o ticket automaticamente após closeTimeFuncionou minutos
-    setTimeout(async () => {
-      if (!interaction.channel || interaction.channel.deleted) return;
-      try {
-        await interaction.channel.send("⏳ This ticket will be closed automatically.");
-        await interaction.channel.delete();
-      } catch (err) {
-        console.log("Erro ao fechar ticket automaticamente:", err.message);
-      }
-    }, config.closeTimeFuncionou * 60 * 1000);
-
-  } catch (err) {
-    console.log("Erro no botão funcionou:", err);
-  }
-}
 
   // ===============================
   // NAO FUNCIONOU
   // ===============================
   if (interaction.customId === "nao_funcionou") {
-  try {
-    // Resposta efêmera para o usuário
-    await interaction.reply({
-      content: `❌ **Support has been activated.**\n\nPlease wait for <@&1447743349749715005>`,
-      flags: 64
-    });
+    try {
+      await interaction.reply({
+        content: `❌ **Support has been activated.**\n\nPlease wait for <@&1447743349749715005>`,
+        flags: 64
+      });
 
-    // Desativa os botões
-    await hideButtons(interaction.message);
+      // Desativa os botões
+      await hideButtons(interaction.message);
 
-  } catch (err) {
-    console.log("Erro no botão nao_funcionou:", err.message);
+    } catch (err) {
+      console.log("Erro no botão nao_funcionou:", err.message);
+    }
   }
-}
 
 });
 
