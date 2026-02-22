@@ -161,15 +161,16 @@ client.on(Events.InteractionCreate, async interaction => {
       }
 
       // Mensagem confirmando
-      await interaction.reply({ content: `
-✅ **Excellent ${interaction.user}**
+      await interaction.reply({
+        content: `✅ **Excellent ${interaction.user}**
 
 📸 Send a **Screenshot Review** and Ping your Helper here: https://discord.com/channels/1447731387250507857/1449424868209594378.
 
 🕒 You received a ${cooldownHours} hours cooldown.
 
-⏱️ Ticket closes in ${config.closeTimeFuncionou} minutes.
-`, flags: 64 });
+⏱️ Ticket closes in ${config.closeTimeFuncionou} minutes.`,
+        flags: 64
+      });
 
       // Desativa os botões
       await hideButtons(interaction.message);
@@ -197,12 +198,16 @@ client.on(Events.InteractionCreate, async interaction => {
   // ===============================
   if (interaction.customId === "nao_funcionou") {
     try {
-      await interaction.reply({ content: `❌ **Support has been activated.**\n\nPlease wait for <@&1447743349749715005>`, flags: 64 });
+      await interaction.reply({
+        content: `❌ **Support has been activated.**\n\nPlease wait for <@&1447743349749715005>`,
+        flags: 64
+      });
 
       // Desativa os botões
       await hideButtons(interaction.message);
 
-       catch (err) {
+      // Envia mensagem extra se possível
+       {
         console.log("Não foi possível enviar mensagem NAO FUNCIONOU:", err.message);
       }
 
