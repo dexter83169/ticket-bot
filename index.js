@@ -197,24 +197,20 @@ client.on(Events.InteractionCreate, async interaction => {
   // NAO FUNCIONOU
   // ===============================
   if (interaction.customId === "nao_funcionou") {
-    try {
-      await interaction.reply({
-        content: `❌ **Support has been activated.**\n\nPlease wait for <@&1447743349749715005>`,
-        flags: 64
-      });
+  try {
+    // Resposta efêmera para o usuário
+    await interaction.reply({
+      content: `❌ **Support has been activated.**\n\nPlease wait for <@&1447743349749715005>`,
+      flags: 64
+    });
 
-      // Desativa os botões
-      await hideButtons(interaction.message);
+    // Desativa os botões
+    await hideButtons(interaction.message);
 
-      // Envia mensagem extra se possível
-       {
-        console.log("Não foi possível enviar mensagem NAO FUNCIONOU:", err.message);
-      }
-
-    } catch (err) {
-      console.log("Erro no botão nao_funcionou:", err);
-    }
+  } catch (err) {
+    console.log("Erro no botão nao_funcionou:", err.message);
   }
+}
 
 });
 
