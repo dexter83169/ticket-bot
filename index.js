@@ -19,7 +19,7 @@ const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.GuildMembers // Essencial para manipular roles
+    GatewayIntentBits.GuildMembers
   ]
 });
 
@@ -64,18 +64,18 @@ client.on(Events.InteractionCreate, async interaction => {
     const cooldownRoleId = config.cooldownRoleId;
     const cooldownHours = config.cooldownHours || 24;
 
-    // 🔒 BLOQUEIA USUÁRIO EM COOLDOWN DE CRIAR TICKET
+    // 🔒 BLOQUEIO DE CRIAÇÃO DE TICKET SE USUÁRIO ESTIVER EM COOLDOWN
     if (member.roles.cache.has(cooldownRoleId)) {
       return interaction.reply({
         content: `⛔ You are still on cooldown for ${cooldownHours} hours and cannot create a new ticket.`,
-        ephemeral: true
+        flags: 64
       });
     }
 
     if (!config.ticketCategoryIds.includes(interaction.channel.parentId)) {
       return interaction.reply({
         content: "❌ This command can only be used inside tickets.",
-        ephemeral: true
+        flags: 64
       });
     }
 
@@ -116,11 +116,11 @@ client.on(Events.InteractionCreate, async interaction => {
       if (member.roles.cache.has(cooldownRoleId)) {
         return interaction.reply({
           content: `⛔ You are already on cooldown for ${cooldownHours} hours.`,
-          ephemeral: true
+          flags: 64
         });
       }
 
-      await interaction.reply({ content: "✅ Confirmed!", ephemeral: true });
+      await interaction.reply({ content: "✅ Confirmed!", flags: 64 });
 
       // Adiciona cooldown role
       await member.roles.add(cooldownRoleId).catch(err => {
@@ -139,7 +139,7 @@ client.on(Events.InteractionCreate, async interaction => {
         }
       }, cooldownHours * 60 * 60 * 1000);
 
-      // Envia mensagem final
+      // Envia mensagem final apenas se tiver permissão
       try {
         if (interaction.channel.permissionsFor(interaction.guild.members.me).has("SendMessages")) {
           await interaction.channel.send(
@@ -165,7 +165,7 @@ client.on(Events.InteractionCreate, async interaction => {
   ============================== */
   if (interaction.customId === "nao_funcionou") {
     try {
-      await interaction.reply({ content: "🔴 Support has been notified.", ephemeral: true });
+      await interaction.reply({ content: "🔴 Support has been notified.", flags: 64 });
 
       try {
         if (interaction.channel.permissionsFor(interaction.guild.members.me).has("SendMessages")) {
