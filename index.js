@@ -195,7 +195,7 @@ client.on(Events.InteractionCreate, async interaction => {
 📸 Send a **SCREENSHOT REVIEW** and Ping your Helper here: https://discord.com/channels/1447731387250507857/1449424868209594378.
 
 ⏱️ Ticket closes in ${config.closeTimeFuncionou} minutes.`,
-        flags: 64
+        
       });
 
       // Desativa os botões
@@ -226,7 +226,7 @@ client.on(Events.InteractionCreate, async interaction => {
     try {
       await interaction.reply({
         content: `❌ **Support has been activated.**\n\nPlease wait for <@&1447743349749715005>`,
-        flags: 64
+        
       });
 
       // Desativa os botões
