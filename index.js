@@ -30,7 +30,29 @@ client.once(Events.ClientReady, () => {
   console.log(`🤖 Bot online como ${client.user.tag}`);
 });
 
+/* =================================
+   CLOSE TICKET FUNCTION (AUTO)
+================================= */
+function fecharTicket(channel, tempo, unidade = "minutos") {
+  const tempoMs =
+    unidade === "horas"
+      ? tempo * 60 * 60 * 1000
+      : tempo * 60 * 1000;
 
+  setTimeout(async () => {
+    if (!channel || channel.deleted) return;
+
+    try {
+      await channel.send("⏳ This ticket will be closed automatically.");
+    } catch {}
+
+    try {
+      await channel.delete();
+    } catch (err) {
+      console.log("Erro ao fechar ticket:", err.message);
+    }
+  }, tempoMs);
+}
 
 
 
