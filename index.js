@@ -59,6 +59,33 @@ function fecharTicket(channel, tempo, unidade = "minutos") {
   }, tempoMs);
 }
 
+// ===============================
+// CONTADOR DE COOLDOWN
+// ===============================
+const cooldowns = new Map();
+
+function startCooldown(interaction, member) {
+  const cooldownHours = config.cooldownHours || 24;
+  const expiration = Date.now() + cooldownHours * 60 * 60 * 1000;
+  cooldowns.set(member.id, expiration);
+
+  const interval = setInterval(() => {
+    const remaining = expiration - Date.now();
+    if (remaining <= 0) {
+      clearInterval(interval);
+      cooldowns.delete(member.id);
+      return;
+    }
+
+    const hours = Math.floor(remaining / (1000 * 60 * 60));
+    const minutes = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
+
+    // Aqui não envia mensagem, pois pode gerar spam
+    // Se quiser notificação, descomente a linha abaixo
+    // interaction.channel.send(`⏱️ **Cooldown**: ${hours}h ${minutes}m restantes para ${member}`);
+  }, 60 * 1000);
+}
+
 
 
 
@@ -161,7 +188,15 @@ client.on(Events.InteractionCreate, async interaction => {
       // Desativa os botões
       await hideButtons(interaction.message);
 
-     
+      // Adiciona role de cooldown
+      try {
+        await member.roles.add(cooldownRoleId);
+      } catch (err) {
+        console.log("Não foi possível adicionar cooldown role:", err.message);
+      }
+
+      // Inicia contador de cooldown
+      startCooldown(interaction, member);
 
       // Fecha o ticket automaticamente
       fecharTicket(interaction.channel, config.closeTimeFuncionou);
