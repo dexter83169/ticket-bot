@@ -49,10 +49,30 @@ function fecharTicket(channel, tempo, unidade = "minutos") {
     } catch {}
 
     try {
+      // 🔎 Verifica se o bot tem permissão
+      const botMember = channel.guild.members.me;
+
+      if (!botMember.permissions.has("ManageChannels")) {
+        console.log("❌ Bot NÃO tem permissão de ManageChannels");
+        return;
+      }
+
+      // 🔥 Remove overwrites do canal (evita bloqueio)
+      try {
+        await channel.permissionOverwrites.set([]);
+      } catch (err) {
+        console.log("⚠️ Não foi possível limpar overwrites:", err.message);
+      }
+
+      // 🗑️ Deleta o canal
       await channel.delete();
+
+      console.log("✅ Ticket fechado automaticamente:", channel.id);
+
     } catch (err) {
-      console.log("Erro ao fechar ticket:", err.message);
+      console.log("❌ Erro ao fechar ticket:", err.message);
     }
+
   }, tempoMs);
 }
 
