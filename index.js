@@ -32,76 +32,9 @@ client.once(Events.ClientReady, () => {
 
 
 
-/* =================================
-   CLOSE TICKET FUNCTION (AUTO)
-================================= */
-function fecharTicket(channel, tempo, unidade = "minutos") {
-  const tempoMs =
-    unidade === "horas"
-      ? tempo * 60 * 60 * 1000
-      : tempo * 60 * 1000;
 
-  setTimeout(async () => {
-    if (!channel || channel.deleted) return;
 
-    try {
-      await channel.send("⏳ This ticket will be closed automatically.");
-    } catch {}
 
-    try {
-      // 🔎 Verifica se o bot tem permissão
-      const botMember = channel.guild.members.me;
-
-      if (!botMember.permissions.has("ManageChannels")) {
-        console.log("❌ Bot NÃO tem permissão de ManageChannels");
-        return;
-      }
-
-      // 🔥 Remove overwrites do canal (evita bloqueio)
-      try {
-        await channel.permissionOverwrites.set([]);
-      } catch (err) {
-        console.log("⚠️ Não foi possível limpar overwrites:", err.message);
-      }
-
-      // 🗑️ Deleta o canal
-      await channel.delete();
-
-      console.log("✅ Ticket fechado automaticamente:", channel.id);
-
-    } catch (err) {
-      console.log("❌ Erro ao fechar ticket:", err.message);
-    }
-
-  }, tempoMs);
-}
-
-// ===============================
-// CONTADOR DE COOLDOWN
-// ===============================
-const cooldowns = new Map();
-
-function startCooldown(interaction, member) {
-  const cooldownHours = config.cooldownHours || 24;
-  const expiration = Date.now() + cooldownHours * 60 * 60 * 1000;
-  cooldowns.set(member.id, expiration);
-
-  const interval = setInterval(() => {
-    const remaining = expiration - Date.now();
-    if (remaining <= 0) {
-      clearInterval(interval);
-      cooldowns.delete(member.id);
-      return;
-    }
-
-    const hours = Math.floor(remaining / (1000 * 60 * 60));
-    const minutes = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
-
-    // Aqui não envia mensagem, pois pode gerar spam
-    // Se quiser notificação, descomente a linha abaixo
-    // interaction.channel.send(`⏱️ **Cooldown**: ${hours}h ${minutes}m restantes para ${member}`);
-  }, 60 * 1000);
-}
 
 // ===============================
 // INTERACTIONS
@@ -201,15 +134,7 @@ client.on(Events.InteractionCreate, async interaction => {
       // Desativa os botões
       await hideButtons(interaction.message);
 
-      // Adiciona role de cooldown
-      try {
-        await member.roles.add(cooldownRoleId);
-      } catch (err) {
-        console.log("Não foi possível adicionar cooldown role:", err.message);
-      }
-
-      // Inicia contador de cooldown
-      startCooldown(interaction, member);
+     
 
       // Fecha o ticket automaticamente
       fecharTicket(interaction.channel, config.closeTimeFuncionou);
