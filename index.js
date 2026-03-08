@@ -248,7 +248,7 @@ client.on(Events.InteractionCreate, async interaction => {
 // ===============================
 // LOGIN
 // ===============================
-const { Client, GatewayIntentBits } = require("discord.js");
+
 
 const client = new Client({
   intents: [GatewayIntentBits.Guilds]
