@@ -188,7 +188,7 @@ client.on(Events.InteractionCreate, async interaction => {
 
 🕒 You have 10 minutes to complete the review before receiving a cooldown.
 
-📸 Send a **SCREENSHOT REVIEW** and Ping your Helper here: https://discord.com/channels/1447731387250507857/1449424868209594378.
+📸 Send a **SCREENSHOT REVIEW** and PING YOUR HELPER here: https://discord.com/channels/1447731387250507857/1449424868209594378.
 
 ⏱️ Ticket closes in ${config.closeTimeFuncionou} minutes.`,
         
