@@ -131,10 +131,6 @@ client.on(Events.InteractionCreate, async interaction => {
       });
     }
 
-    // Comando de teste
-    return interaction.reply("Hello! ✅");
-  }
-});
 
 // ===============================
 // REGISTER SLASH COMMANDS
