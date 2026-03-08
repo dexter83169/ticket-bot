@@ -1,3 +1,14 @@
+const express = require("express");
+const app = express();
+
+app.get("/", (req, res) => {
+  res.send("Bot online");
+});
+
+app.listen(3000, () => {
+  console.log("Server running");
+});
+
 require("dotenv").config();
 
 const { Client, GatewayIntentBits, ActionRowBuilder, ButtonBuilder, ButtonStyle, Events, EmbedBuilder } = require("discord.js");
