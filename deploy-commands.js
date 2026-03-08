@@ -1,21 +1,27 @@
+require("dotenv").config();
 
-// ===============================
-// REGISTER SLASH COMMANDS
-// ===============================
+const { REST, Routes, SlashCommandBuilder } = require("discord.js");
+
 const commands = [
-  { name: "reply", description: "Test reply command" }
-];
+  new SlashCommandBuilder()
+    .setName("reply")
+    .setDescription("Send ticket buttons inside a Tickety ticket")
+].map(command => command.toJSON());
 
 const rest = new REST({ version: "10" }).setToken(process.env.TOKEN);
 
 (async () => {
   try {
-    console.log("Refreshing slash commands...");
+
+    console.log("⏳ Registering slash command /reply...");
+
     await rest.put(
-      Routes.applicationGuildCommands("1470122326191247593", "1447731387250507857"), 
+      Routes.applicationCommands(process.env.CLIENT_ID),
       { body: commands }
     );
-    console.log("Commands registered ✅");
+
+    console.log("✅ Slash command /reply registered!");
+
   } catch (error) {
     console.error(error);
   }
