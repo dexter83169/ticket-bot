@@ -130,6 +130,8 @@ client.on(Events.InteractionCreate, async interaction => {
         flags: 64
       });
     }
+  } // <<< Aqui fechamos o bloco do "reply"
+});
 
 
 // ===============================
