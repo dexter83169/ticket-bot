@@ -248,4 +248,4 @@ client.on(Events.InteractionCreate, async interaction => {
 // ===============================
 // LOGIN
 // ===============================
-client.login(process.env.token);
+client.login(process.env.TOKEN);
