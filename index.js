@@ -1,40 +1,27 @@
-require('dotenv').config(); // Carrega variáveis do .env
+require("dotenv").config();
 
-const express = require("express");
-const { 
-  Client, 
-  GatewayIntentBits, 
-  ActionRowBuilder, 
-  ButtonBuilder, 
-  ButtonStyle, 
-  Events, 
-  EmbedBuilder, 
-  REST, 
-  Routes 
+const {
+  Client,
+  GatewayIntentBits,
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  Events,
+  EmbedBuilder
 } = require("discord.js");
 
-const fs = require("fs");
 const config = require("./config.json");
-
-// ===============================
-// KEEP ALIVE (Express)
-// ===============================
-const app = express();
-app.get("/", (req, res) => res.send("Bot online"));
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log("Server running"));
 
 // ===============================
 // CLIENT
 // ===============================
 const client = new Client({
   intents: [
-    GatewayIntentBits.Guilds, 
-    GatewayIntentBits.GuildMessages, 
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMessages,
     GatewayIntentBits.GuildMembers
   ]
 });
-
 
 // ===============================
 // BOT ONLINE
@@ -73,7 +60,7 @@ function fecharTicket(channel, tempo, unidade = "minutos") {
 }
 
 // ===============================
-// COOLDOWNS
+// CONTADOR DE COOLDOWN
 // ===============================
 const cooldowns = new Map();
 
@@ -98,6 +85,9 @@ function startCooldown(interaction, member) {
     // interaction.channel.send(`⏱️ **Cooldown**: ${hours}h ${minutes}m restantes para ${member}`);
   }, 60 * 1000);
 }
+
+
+
 
 
 // ===============================
@@ -144,8 +134,8 @@ client.on(Events.InteractionCreate, async interaction => {
       components: [row]
     });
   }
-  
-    // ===== BUTTONS =====
+
+  // ===== BUTTONS =====
   if (!interaction.isButton()) return;
   if (!config.ticketCategoryIds.includes(interaction.channel.parentId)) return;
 
@@ -189,7 +179,7 @@ client.on(Events.InteractionCreate, async interaction => {
 
 🕒 You have 10 minutes to complete the review before receiving a cooldown.
 
-📸 Send a **SCREENSHOT REVIEW** and PING YOUR HELPER here: https://discord.com/channels/1447731387250507857/1449424868209594378.
+📸 Send a **SCREENSHOT REVIEW** and Ping your Helper here: https://discord.com/channels/1447731387250507857/1449424868209594378.
 
 ⏱️ Ticket closes in ${config.closeTimeFuncionou} minutes.`,
         
@@ -236,9 +226,7 @@ client.on(Events.InteractionCreate, async interaction => {
 
 });
 
-
-
 // ===============================
 // LOGIN
 // ===============================
-client.login(process.env.TOKEN);
+client.login(process.env.BOT_TOKEN);
