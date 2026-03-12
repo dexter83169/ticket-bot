@@ -1,4 +1,5 @@
 require("dotenv").config();
+const fs = require("fs");
 
 const {
   Client,
@@ -11,6 +12,20 @@ const {
 } = require("discord.js");
 
 const config = require("./config.json");
+
+// ===============================
+// COOLDOWN STORAGE
+// ===============================
+const cooldownFile = "./cooldowns.json";
+let cooldowns = {};
+
+if (fs.existsSync(cooldownFile)) {
+  cooldowns = JSON.parse(fs.readFileSync(cooldownFile));
+}
+
+function saveCooldowns() {
+  fs.writeFileSync(cooldownFile, JSON.stringify(cooldowns, null, 2));
+}
 
 // ===============================
 // CLIENT
@@ -26,8 +41,31 @@ const client = new Client({
 // ===============================
 // BOT ONLINE
 // ===============================
-client.once(Events.ClientReady, () => {
+client.once(Events.ClientReady, async () => {
   console.log(`🤖 Bot online como ${client.user.tag}`);
+
+  // Restaurar cooldowns ao reiniciar
+  for (const userId in cooldowns) {
+    const expiration = cooldowns[userId];
+    const remaining = expiration - Date.now();
+    if (remaining <= 0) {
+      delete cooldowns[userId];
+      continue;
+    }
+
+    setTimeout(async () => {
+      try {
+        const guild = client.guilds.cache.first();
+        const member = await guild.members.fetch(userId);
+        if (member.roles.cache.has(config.cooldownRoleId)) {
+          await member.roles.remove(config.cooldownRoleId);
+        }
+        delete cooldowns[userId];
+        saveCooldowns();
+        console.log(`✅ Cooldown finished for ${member.user.tag} (restored)`);
+      } catch {}
+    }, remaining);
+  }
 });
 
 /* ===============================
@@ -60,82 +98,124 @@ function fecharTicket(channel, tempo, unidade = "minutos") {
 }
 
 // ===============================
-// CONTADOR DE COOLDOWN
+// START COOLDOWN
 // ===============================
-const cooldowns = new Map();
-
-function startCooldown(interaction, member) {
+async function startCooldown(member) {
   const cooldownHours = config.cooldownHours || 24;
+  const cooldownRoleId = config.cooldownRoleId;
   const expiration = Date.now() + cooldownHours * 60 * 60 * 1000;
-  cooldowns.set(member.id, expiration);
 
-  const interval = setInterval(() => {
-    const remaining = expiration - Date.now();
-    if (remaining <= 0) {
-      clearInterval(interval);
-      cooldowns.delete(member.id);
-      return;
+  cooldowns[member.id] = expiration;
+  saveCooldowns();
+
+  setTimeout(async () => {
+    try {
+      const guild = member.guild;
+      const user = await guild.members.fetch(member.id);
+
+      if (user.roles.cache.has(cooldownRoleId)) {
+        await user.roles.remove(cooldownRoleId);
+      }
+
+      delete cooldowns[member.id];
+      saveCooldowns();
+      console.log(`✅ Cooldown finished for ${user.user.tag}`);
+    } catch (err) {
+      console.log("❌ Failed to remove cooldown role:", err.message);
     }
-
-    const hours = Math.floor(remaining / (1000 * 60 * 60));
-    const minutes = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
-
-    // Aqui não envia mensagem, pois pode gerar spam
-    // Se quiser notificação, descomente a linha abaixo
-    // interaction.channel.send(`⏱️ **Cooldown**: ${hours}h ${minutes}m restantes para ${member}`);
-  }, 60 * 1000);
+  }, expiration - Date.now());
 }
-
-
-
-
 
 // ===============================
 // INTERACTIONS
 // ===============================
 client.on(Events.InteractionCreate, async interaction => {
+
+  // ===============================
+  // SLASH COMMANDS
+  // ===============================
   if (interaction.isChatInputCommand()) {
-    if (interaction.commandName !== "reply") return;
 
-    const member = interaction.member;
-    const cooldownRoleId = config.cooldownRoleId;
+    // ===============================
+    // /reply
+    // ===============================
+    if (interaction.commandName === "reply") {
 
-    if (member.roles.cache.has(cooldownRoleId)) {
+      const member = interaction.member;
+      const cooldownRoleId = config.cooldownRoleId;
+
+      if (member.roles.cache.has(cooldownRoleId)) {
+        return interaction.reply({
+          content: `⛔ You are still on cooldown and cannot create a new ticket.`,
+          flags: 64
+        });
+      }
+
+      if (!config.ticketCategoryIds.includes(interaction.channel.parentId)) {
+        return interaction.reply({
+          content: "❌ This command can only be used inside tickets.",
+          flags: 64
+        });
+      }
+
+      const row = new ActionRowBuilder().addComponents(
+        new ButtonBuilder()
+          .setCustomId("funcionou")
+          .setLabel("✅ It worked")
+          .setStyle(ButtonStyle.Success),
+        new ButtonBuilder()
+          .setCustomId("nao_funcionou")
+          .setLabel("❌ It didn't work")
+          .setStyle(ButtonStyle.Danger)
+      );
+
+      const embed = new EmbedBuilder()
+        .setDescription("🎮 **Your game worked correctly?**")
+        .setColor(0x2ecc71);
+
       return interaction.reply({
-        content: `⛔ You are still on cooldown and cannot create a new ticket.`,
+        embeds: [embed],
+        components: [row]
+      });
+    }
+
+    // ===============================
+    // /cooldown
+    // ===============================
+    if (interaction.commandName === "cooldown") {
+      const expiration = cooldowns[interaction.user.id];
+
+      if (!expiration) {
+        return interaction.reply({
+          content: "✅ You are not on cooldown.",
+          flags: 64
+        });
+      }
+
+      const remaining = expiration - Date.now();
+      if (remaining <= 0) {
+        delete cooldowns[interaction.user.id];
+        saveCooldowns();
+        return interaction.reply({
+          content: "✅ Your cooldown has ended.",
+          flags: 64
+        });
+      }
+
+      const hours = Math.floor(remaining / (1000 * 60 * 60));
+      const minutes = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
+
+      return interaction.reply({
+        content: `⏱️ Cooldown remaining: **${hours}h ${minutes}m**`,
         flags: 64
       });
     }
 
-    if (!config.ticketCategoryIds.includes(interaction.channel.parentId)) {
-      return interaction.reply({
-        content: "❌ This command can only be used inside tickets.",
-        flags: 64
-      });
-    }
-
-    const row = new ActionRowBuilder().addComponents(
-      new ButtonBuilder()
-        .setCustomId("funcionou")
-        .setLabel("✅ It worked")
-        .setStyle(ButtonStyle.Success),
-      new ButtonBuilder()
-        .setCustomId("nao_funcionou")
-        .setLabel("❌ It didn't work")
-        .setStyle(ButtonStyle.Danger)
-    );
-
-    const embed = new EmbedBuilder()
-      .setDescription("🎮 **Your game worked correctly?**")
-      .setColor(0x2ecc71);
-
-    return interaction.reply({
-      embeds: [embed],
-      components: [row]
-    });
   }
 
-  // ===== BUTTONS =====
+  // ===============================
+  // BUTTONS
+  // ===============================
   if (!interaction.isButton()) return;
   if (!config.ticketCategoryIds.includes(interaction.channel.parentId)) return;
 
@@ -173,7 +253,6 @@ client.on(Events.InteractionCreate, async interaction => {
         });
       }
 
-      // Mensagem confirmando
       await interaction.reply({
         content: `✅ **Excellent ${interaction.user}**
 
@@ -182,10 +261,8 @@ client.on(Events.InteractionCreate, async interaction => {
 📸 Send a **SCREENSHOT REVIEW** and Ping your Helper here: https://discord.com/channels/1447731387250507857/1449424868209594378.
 
 ⏱️ Ticket closes in ${config.closeTimeFuncionou} minutes.`,
-        
       });
 
-      // Desativa os botões
       await hideButtons(interaction.message);
 
       // Adiciona role de cooldown
@@ -196,7 +273,7 @@ client.on(Events.InteractionCreate, async interaction => {
       }
 
       // Inicia contador de cooldown
-      startCooldown(interaction, member);
+      startCooldown(member);
 
       // Fecha o ticket automaticamente
       fecharTicket(interaction.channel, config.closeTimeFuncionou);
@@ -213,10 +290,8 @@ client.on(Events.InteractionCreate, async interaction => {
     try {
       await interaction.reply({
         content: `❌ **Support has been activated.**\n\nPlease wait for <@&1447743349749715005>`,
-        
       });
 
-      // Desativa os botões
       await hideButtons(interaction.message);
 
     } catch (err) {
